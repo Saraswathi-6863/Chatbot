@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Chatbot</title>
+  <style>
+
+/* Reset some default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Set the font for the whole page */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f7fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+/* Chat container style */
+#chatBox {
+  width: 400px;
+  max-height: 600px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+  position: relative;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Chat message bubbles */
+.message {
+  margin: 10px 0;
+  padding: 12px 20px;
+  border-radius: 20px;
+  max-width: 80%;
+  font-size: 16px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+/* Style for user messages */
+.user-message {
+  background-color: #e1ffc7;
+  align-self: flex-end;
+  color: #333;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 20px;
+  border-top-left-radius: 20px;
+  text-align: right;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Style for bot messages */
+.bot-message {
+  background-color: #f1f1f1;
+  color: #444;
+  align-self: flex-start;
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 20px;
+  border-top-right-radius: 20px;
+  text-align: left;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Chat input field style */
+#userInput {
+  width: 100%;
+  padding: 12px;
+  border-radius: 30px;
+  border: 2px solid #ccc;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Focus effect for input field */
+#userInput:focus {
+  border-color: #66bb6a;
+}
+
+/* Send button style */
+#sendBtn {
+  background-color: #66bb6a;
+  color: #fff;
+  border: none;
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 50px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect for the send button */
+#sendBtn:hover {
+  background-color: #4caf50;
+  transform: scale(1.05);
+}
+
+/* Add a container to keep the chat box and the input area together */
+.chat-container {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Styling for the header or greeting text */
+header {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Styling for bot name or title */
+.bot-title {
+  font-size: 20px;
+  color: #2f3e46;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Add a small introductory text above the chat box */
+.introduction-text {
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Add smooth scroll bar */
+#chatBox {
+  scrollbar-width: thin;
+  scrollbar-color: #66bb6a #f5f7fa;
+}
+
+#chatBox::-webkit-scrollbar {
+  width: 8px;
+}
+
+#chatBox::-webkit-scrollbar-thumb {
+  background-color: #66bb6a;
+  border-radius: 10px;
+}
+
+#chatBox::-webkit-scrollbar-track {
+  background-color: #f5f7fa;
+}
+</style>
+</head>
+<body>
+  <div class="chat-container">
+    <header>Welcome to the Chatbot 🤖</header>
+    <div class="introduction-text">Ask me anything! I can help with general knowledge, IPL updates, and more! 😊</div>
+
+    <div id="chatBox"></div>
+
+    <input type="text" id="userInput" placeholder="Type your message..." />
+    <button id="sendBtn">Send</button>
+  </div>
+  
+  <script>
+
+// script.js
+
+// Get elements
+const sendButton = document.getElementById('sendBtn');
+const userInput = document.getElementById('userInput');
+const chatBox = document.getElementById('chatBox');
+
+// Predefined answers with variations, emojis, and basic search topics
+const responses = {
+  greetings: [
+    'Hello there! 👋 How can I assist you today? 😊',
+    'Hi! 👋 What can I do for you? 🤖',
+    'Hey! 😄 Need some help? 🛠️'
+
+  ],
+  farewell: [
+    'Goodbye! 👋 Have a great day! 🌟',
+    'Bye! 😢 Take care! ✨',
+    'See you later! 👋 Take care of yourself! 💖'
+  ],
+  howAreYou: [
+    'I\'m just a bot, but I\'m doing great! How about you? 😎',
+    'I\'m good, thanks for asking! How are you doing? 🤔',
+    'I\'m doing awesome, how about you? 😁'
+  ],
+  joke: [
+    'Why don’t skeletons fight each other? They don’t have the guts! 💀',
+    'I told my wife she was drawing her eyebrows too high. She looked surprised! 😲',
+    'What do you call fake spaghetti? An impasta! 🍝'
+  ],
+  searchResults: {
+    "capital of france": "The capital of France is Paris. 🇫🇷",
+    "capital of india": "The capital of india is new delhi. nd",
+    "largest ocean": "The largest ocean is the Pacific Ocean. 🌊",
+    "earth's diameter": "The diameter of Earth is about 12,742 km. 🌍",
+    "apple": "Apple is a tech company known for products like the iPhone, iPad, and Mac. 🍏",
+    "google": "Google is a search engine and tech giant that also owns YouTube, Android, and other services. 🔍",
+    "product price": "This product costs $49.99. 💵",
+    
+    // IPL-related queries
+    "what is ipl": "IPL stands for Indian Premier League. It is a professional men's Twenty20 cricket league in India, founded in 2008. 🏏",
+    "ipl winner": "The most recent IPL winner (2024) was Gujarat Titans. 🏆",
+    "ipl teams": "There are 10 teams in IPL as of 2024: Chennai Super Kings, Delhi Capitals, Gujarat Titans, Kolkata Knight Riders, Lucknow Super Giants, Mumbai Indians, Punjab Kings, Rajasthan Royals, Royal Challengers Bangalore, and Sunrisers Hyderabad. ⚡",
+    "most runs in ipl": "The player with the most runs in IPL history is Virat Kohli with over 6000 runs. 🔥",
+    "ipl records": "In the IPL, the record for most sixes in a season is held by Chris Gayle with 53 sixes in 2013. 💥",
+
+    // Current Event Searches
+    "weather": "Sorry, I am unable to fetch real-time weather info. But you can check sites like Weather.com or use a weather app! 🌤️",
+    "current news": "To get the latest news, you can check major news platforms like BBC, CNN, or Reuters. 📰",
+    "top trends": "Currently trending: AI developments, SpaceX launch, and the latest in the IPL season. 🌟",
+    "latest tech trends": "Latest tech trends include AI advancements, Virtual Reality, 5G technology, and quantum computing. 💻🚀",
+    "famous celebrities": "Some famous celebrities right now include Rihanna, Leonardo DiCaprio, Zendaya, and Cristiano Ronaldo. 🌟",
+    "sports events": "The current sports events include the IPL 2024, NBA playoffs, and Wimbledon. 🏆🏀🎾",
+    "tech gadgets": "Popular tech gadgets right now include the latest iPhone, Samsung Galaxy, and Apple Watch Ultra. 📱⌚"
+     
+  },
+  default: [
+    'Sorry, I didn\'t quite catch that. Could you rephrase? 🤷‍♂️',
+    'Oops! I didn’t understand that. Can you ask me something else? 🤔',
+    'I’m still learning, can you try asking something else? 💡'
+  ]
+};
+
+// Function to display a message in the chat window
+function displayMessage(content, sender) {
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('message');
+  messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+  messageDiv.textContent = content;
+  chatBox.appendChild(messageDiv);
+  chatBox.scrollTop = chatBox.scrollHeight; // Auto scroll to the latest message
+}
+
+// Function to generate chatbot response based on user input
+function getChatbotResponse(userMessage) {
+  userMessage = userMessage.toLowerCase().trim();
+
+  // Check for greetings (hello, hi)
+  if (/hello|hi|hey/.test(userMessage)) {
+    return responses.greetings[Math.floor(Math.random() * responses.greetings.length)];
+  }
+
+  // Check for farewells (bye, goodbye)
+  if (/bye|goodbye|see you/.test(userMessage)) {
+    return responses.farewell[Math.floor(Math.random() * responses.farewell.length)];
+  }
+
+  // Check for how are you questions
+  if (/how are you|how are you doing/.test(userMessage)) {
+    return responses.howAreYou[Math.floor(Math.random() * responses.howAreYou.length)];
+  }
+
+  // Check for jokes
+  if (/joke/.test(userMessage)) {
+    return responses.joke[Math.floor(Math.random() * responses.joke.length)];
+  }
+
+  // Search for specific information (e.g., general knowledge, product details, IPL, current events)
+  for (let query in responses.searchResults) {
+    if (userMessage.includes(query)) {
+      return responses.searchResults[query];
+    }
+  }
+
+  // Fallback response if no match is found
+  return responses.default[Math.floor(Math.random() * responses.default.length)];
+}
+
+// Event listener for the send button
+sendButton.addEventListener('click', function () {
+  const userMessage = userInput.value.trim();
+  if (userMessage) {
+    displayMessage(userMessage, 'user'); // Show user's message
+    const botMessage = getChatbotResponse(userMessage); // Get chatbot's response
+    setTimeout(() => displayMessage(botMessage, 'bot'), 500); // Show bot's response after a short delay
+    userInput.value = ''; // Clear input field
+  }
+});
+
+// Event listener for "Enter" key press to send the message
+userInput.addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') {
+    sendButton.click();
+  }
+});
+</script>
+</body>
+</html>
